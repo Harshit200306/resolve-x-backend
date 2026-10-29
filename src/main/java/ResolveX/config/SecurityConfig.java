@@ -33,15 +33,29 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(
-                java.util.List.of("http://localhost:5173")
+                java.util.List.of(
+                        "http://localhost:5173",
+                        "http://localhost:5174",
+                        "https://resolve-x-frontend.vercel.app"
+                )
         );
 
         configuration.setAllowedMethods(
-                java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                java.util.List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE",
+                        "OPTIONS"
+                )
         );
 
         configuration.setAllowedHeaders(
-                java.util.List.of("Authorization", "Content-Type")
+                java.util.List.of(
+                        "Authorization",
+                        "Content-Type"
+                )
         );
 
         configuration.setAllowCredentials(true);
@@ -61,6 +75,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 .csrf(csrf -> csrf.disable())
+
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -112,11 +127,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/workers/my-complaints")
                         .hasRole("WORKER")
 
-
                         .requestMatchers(HttpMethod.GET, "/api/workers/available")
                         .hasAnyRole("USER", "WORKER")
+
                         .requestMatchers(HttpMethod.PUT, "/api/workers/availability")
                         .hasRole("WORKER")
+
                         .anyRequest().authenticated()
                 )
 
@@ -127,5 +143,5 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 }
+
