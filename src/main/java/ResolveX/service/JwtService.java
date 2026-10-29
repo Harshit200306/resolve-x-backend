@@ -2,6 +2,9 @@ package ResolveX.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -10,22 +13,32 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private final SecretKey key =
-            Jwts.SIG.HS384.key().build();
+    private final SecretKey key;
+
+    public JwtService(@Value("${JWT_SECRET:}") String secret) {
+
+        if (secret == null || secret.isBlank()) {
+            this.key = Jwts.SIG.HS384.key().build();
+        } else {
+            this.key = Keys.hmacShaKeyFor(
+                    Decoders.BASE64.decode(secret)
+            );
+        }
+    }
 
     public String generateToken(String email, String role) {
-
         return Jwts.builder()
                 .subject(email)
                 .claim("role", role)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 86400000))
+                .expiration(
+                        new Date(System.currentTimeMillis() + 86400000)
+                )
                 .signWith(key)
                 .compact();
     }
 
     public String extractEmail(String token) {
-
         return Jwts.parser()
                 .verifyWith(key)
                 .build()
@@ -35,7 +48,6 @@ public class JwtService {
     }
 
     public String extractRole(String token) {
-
         Claims claims = Jwts.parser()
                 .verifyWith(key)
                 .build()
